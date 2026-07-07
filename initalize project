@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Identity | IP Lookup</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                        'blob': 'blob 7s infinite',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        },
+                        'blob': {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+            border-radius: 4px;
+            color: transparent !important;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200 min-h-screen flex items-center justify-center relative overflow-hidden font-sans selection:bg-indigo-500/30">
+
+    <!-- Animated Background Blobs -->
+    <div class="absolute top-0 -left-4 w-72 h-72 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+    <div class="absolute top-0 -right-4 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+    <div class="absolute -bottom-8 left-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+
+    <!-- Main Container -->
+    <div class="relative z-10 w-full max-w-2xl p-6">
+        <div class="glass-panel rounded-3xl p-8 md:p-10 shadow-2xl">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">
+                        Network Identity
+                    </h1>
+                    <p class="text-slate-400 text-sm mt-1">Real-time connection analysis</p>
+                </div>
+                <div class="h-12 w-12 rounded-full bg-slate-800/50 flex items-center justify-center border border-slate-700/50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- IP Display Section -->
+            <div class="bg-slate-900/50 border border-slate-700/50 rounded-2xl p-6 mb-8 relative group transition-all duration-300 hover:border-indigo-500/30 hover:bg-slate-900/80">
+                <p class="text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-2">Public IPv4 Address</p>
+                <div class="flex items-center justify-between">
+                    <h2 id="ip-address" class="text-4xl md:text-5xl font-bold font-mono text-white tracking-tight skeleton">000.000.000.000</h2>
+
+                    <button id="copy-btn" class="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all duration-200 transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900" title="Copy to clipboard">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Details Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <!-- Location -->
+                <div class="bg-slate-800/30 border border-slate-700/30 rounded-xl p-5 flex items-start space-x-4">
+                    <div class="bg-slate-900 p-2 rounded-lg text-cyan-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">Location</p>
+                        <p id="location" class="font-medium text-slate-200 skeleton">Detecting region...</p>
+                    </div>
+                </div>
+
+                <!-- ISP -->
+                <div class="bg-slate-800/30 border border-slate-700/30 rounded-xl p-5 flex items-start space-x-4">
+                    <div class="bg-slate-900 p-2 rounded-lg text-purple-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">Provider (ISP)</p>
+                        <p id="isp" class="font-medium text-slate-200 skeleton">Detecting ISP...</p>
+                    </div>
+                </div>
+
+                <!-- ASN -->
+                <div class="bg-slate-800/30 border border-slate-700/30 rounded-xl p-5 flex items-start space-x-4">
+                    <div class="bg-slate-900 p-2 rounded-lg text-emerald-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">ASN</p>
+                        <p id="asn" class="font-mono text-sm font-medium text-slate-200 skeleton">Detecting ASN...</p>
+                    </div>
+                </div>
+
+                <!-- Timezone -->
+                <div class="bg-slate-800/30 border border-slate-700/30 rounded-xl p-5 flex items-start space-x-4">
+                    <div class="bg-slate-900 p-2 rounded-lg text-amber-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">Timezone</p>
+                        <p id="timezone" class="font-medium text-slate-200 skeleton">Detecting time...</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-8 text-center border-t border-slate-700/50 pt-4">
+                <p class="text-xs text-slate-500 flex items-center justify-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    API Connected & Active
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-800 border border-slate-700 text-white px-6 py-3 rounded-full shadow-2xl flex items-center space-x-3 transition-all duration-300 translate-y-20 opacity-0 z-50">
+        <div class="bg-emerald-500/20 text-emerald-400 p-1 rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+        </div>
+        <span class="font-medium text-sm">IP Address copied to clipboard!</span>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const elements = {
+                ip: document.getElementById('ip-address'),
+                location: document.getElementById('location'),
+                isp: document.getElementById('isp'),
+                asn: document.getElementById('asn'),
+                timezone: document.getElementById('timezone'),
+                copyBtn: document.getElementById('copy-btn'),
+                toast: document.getElementById('toast')
+            };
+
+            let currentIp = '';
+
+            // Remove skeleton loading class
+            const removeSkeletons = () => {
+                Object.values(elements).forEach(el => {
+                    if(el && el.classList.contains('skeleton')) {
+                        el.classList.remove('skeleton');
+                    }
+                });
+            };
+
+            // Fetch IP and Geo data
+            async function fetchIpData() {
+                try {
+                    // ip-api does not require an API key
+                    const response = await fetch('http://ip-api.com/json/');
+
+                    if (!response.ok) throw new Error('Network response was not ok');
+
+                    const data = await response.json();
+
+                    currentIp = data.query;
+                    elements.ip.textContent = currentIp;
+                    elements.location.textContent = `${data.city}, ${data.country} ${data.countryCode}`;
+                    elements.isp.textContent = data.isp;
+                    elements.asn.textContent = data.as || 'N/A';
+                    elements.timezone.textContent = data.timezone ? data.timezone.replace('_', ' ') : 'N/A';
+
+                    removeSkeletons();
+
+                } catch (error) {
+                    console.error('Error fetching IP data:', error);
+
+                    // Fallback to simpler API if the primary one fails
+                    try {
+                        const fallbackResponse = await fetch('https://api.ipify.org?format=json');
+                        const fallbackData = await fallbackResponse.json();
+
+                        currentIp = fallbackData.ip;
+                        elements.ip.textContent = currentIp;
+                        elements.location.textContent = 'Unavailable via Fallback';
+                        elements.isp.textContent = 'Unavailable';
+                        elements.asn.textContent = 'Unavailable';
+                        elements.timezone.textContent = 'Unavailable';
+
+                        removeSkeletons();
+                    } catch (fallbackError) {
+                        elements.ip.textContent = 'Failed to load';
+                        elements.ip.classList.add('text-red-400');
+                        removeSkeletons();
+                    }
+                }
+            }
+
+            // Copy to clipboard functionality
+            elements.copyBtn.addEventListener('click', () => {
+                if (!currentIp) return;
+
+                navigator.clipboard.writeText(currentIp).then(() => {
+                    showToast();
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                });
+            });
+
+            // Toast notification animation
+            let toastTimeout;
+            function showToast() {
+                clearTimeout(toastTimeout);
+
+                // Show toast
+                elements.toast.classList.remove('translate-y-20', 'opacity-0');
+                elements.toast.classList.add('translate-y-0', 'opacity-100');
+
+                // Hide toast after 3 seconds
+                toastTimeout = setTimeout(() => {
+                    elements.toast.classList.remove('translate-y-0', 'opacity-100');
+                    elements.toast.classList.add('translate-y-20', 'opacity-0');
+                }, 3000);
+            }
+
+            // Artificial delay to show off the skeleton loaders (optional, can be removed for instant load)
+            setTimeout(fetchIpData, 500); 
+        });
+    </script>
+</body>
+</html>
